@@ -1,0 +1,1032 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#101a31">
+  <meta name="description" content="离线英语拼词与句子小游戏，学习220个Dolch常见词。">
+  <title>词语机甲队</title>
+  <style>
+@charset "UTF-8";
+:root { color-scheme: dark; --bg: #101a31; --panel: #1a2843; --panel-light: #233452; --ink: #f4f8ff; --muted: #adbdd6; --mint: #58dfcb; --orange: #ff9970; --line: #374963; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 16px; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 280px; min-height: 100vh; color: var(--ink); background: radial-gradient(ellipse at 15% 25%, #20364b 0, transparent 45%), var(--bg); }
+button { min-height: 56px; border: 0; border-radius: 14px; padding: 12px 18px; color: inherit; font: inherit; font-weight: 650; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: background .18s, transform .18s, border-color .18s; }
+button:hover:not(:disabled) { filter: brightness(1.07); }
+button:active:not(:disabled) { transform: translateY(2px); }
+button:focus-visible { outline: 3px solid #ffda70; outline-offset: 4px; }
+button:disabled { cursor: default; }
+[hidden] { display: none !important; }
+svg { display: block; }
+h1, h2, p { margin: 0; }
+h1 { font-size: clamp(1.85rem, 4vw, 2.75rem); letter-spacing: -.04em; line-height: 1.3; }
+h2 { font-size: 1.3rem; font-weight: 750; }
+small { font-size: .875rem; }
+main:focus { outline: none; }
+.app-shell { max-width: 1180px; margin: 0 auto; padding: 16px 20px 0; }
+.app-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-bottom: 28px; }
+.brand { display: flex; align-items: center; gap: 12px; background: transparent; text-align: left; padding: 0; border-radius: 8px; font-size: 1.125rem; letter-spacing: .025em; }
+.brand small { display: block; margin-top: 2px; font-size: .75rem; color: var(--muted); letter-spacing: .15em; }
+.brand-symbol { display: grid; place-items: center; width: 42px; height: 42px; background: var(--mint); color: var(--bg); border-radius: 12px 12px 4px 12px; font-size: 1.5rem; font-weight: 900; }
+.quiet-button { background: #22314b; border: 1px solid var(--line); font-size: .9375rem; }
+.app-footer { display: flex; justify-content: space-between; gap: 12px; padding: 24px 0; color: #9db0cc; font-size: .875rem; }
+.eyebrow { display: block; color: var(--mint); font-size: .9375rem; font-weight: 650; letter-spacing: .05em; margin-bottom: 12px; }
+.base-layout, .world-layout { display: grid; grid-template-columns: .92fr 1.08fr; gap: 44px; align-items: start; }
+.hangar { padding: 14px 10px 0 6px; }
+.hangar h1 { margin-bottom: 10px; }
+.robot-platform { height: 286px; position: relative; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+.robot { width: 260px; height: auto; position: relative; z-index: 1; }
+.robot-platform .robot { width: 248px; }
+.orbit { position: absolute; border: 1px solid #43637a; border-radius: 50%; transform: rotate(-18deg); opacity: .45; }
+.orbit-one { width: 280px; height: 200px; }
+.orbit-two { width: 310px; height: 250px; border-style: dashed; }
+.hangar-coordinate { position: absolute; bottom: 4px; right: 0; font-family: monospace; font-size: .875rem; color: #9fb3cd; }
+.collection-stats, .result-stats, .parent-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.collection-stats { margin-top: 16px; padding: 20px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.collection-stats div, .result-stats div, .parent-summary div { display: flex; flex-direction: column; gap: 6px; }
+.collection-stats strong { font-size: 1.875rem; font-weight: 800; }
+.collection-stats strong small, .parent-summary strong small { color: var(--muted); font-weight: 450; font-size: .9375rem; margin-left: 4px; }
+.collection-stats div > span { color: var(--muted); font-size: .875rem; }
+.short-note { margin-top: 14px; color: var(--muted); font-size: .875rem; line-height: 1.6; }
+.mission-panel, .stage-panel { padding: 26px; background: var(--panel); border: 1px solid #30435e; border-radius: 24px; }
+.panel-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 20px; }
+.round-label { color: var(--muted); font-size: .875rem; }
+.world-list { display: grid; gap: 12px; }
+.world-card { display: flex; align-items: center; gap: 16px; text-align: left; width: 100%; padding: 16px; background: #243452; border: 1px solid #3b4d68; border-radius: 15px; min-height: 86px; }
+.world-card.recommended { background: #254047; border-color: var(--world-color); box-shadow: inset 3px 0 var(--world-color); }
+.world-number { font-family: monospace; font-weight: 550; font-size: 1.5rem; color: var(--world-color); min-width: 32px; }
+.world-copy { flex: 1; }
+.world-copy > strong { font-size: 1.125rem; display: block; margin-bottom: 5px; }
+.world-copy > span { display: block; color: var(--muted); font-size: .875rem; font-weight: 400; }
+.world-status { font-size: .875rem; color: var(--world-color); }
+.world-badge { display: inline-block; margin-left: 8px; font-size: .75rem; color: var(--world-color); }
+.world-card.locked { background: #1d2b45; border-color: #2e3e59; }
+.world-card.locked .world-number, .world-card.locked .world-status { color: #91a3bd; }
+.world-card.locked .world-copy strong { color: #b3c1d6; }
+.bonus-button { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 20px; padding: 18px 0 0; border-radius: 0; border-top: 1px solid var(--line); background: transparent; text-align: left; }
+.bonus-icon { width: 38px; height: 38px; padding: 8px; border-radius: 12px; background: #443b30; color: #ffda70; }
+.bonus-button strong { font-size: 1rem; display: block; }
+.bonus-button small { display: block; font-weight: 400; margin-top: 4px; color: var(--muted); line-height: 1.5; }
+.bonus-status { margin-left: auto; color: #ffda70; font-size: .875rem; white-space: nowrap; }
+.bonus-button:disabled .bonus-status { display: none; }
+.bonus-button:disabled { opacity: .65; }
+.world-hangar { text-align: center; }
+.world-hangar .quiet-button { display: block; margin-bottom: 28px; }
+.world-hangar .eyebrow { color: var(--world-color); margin-top: 6px; }
+.world-hangar .robot { margin: 12px auto 0; width: 280px; max-width: 100%; }
+.robot-name { font-size: 1.25rem; font-weight: 750; color: var(--world-color); }
+.stage-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.stage-card { border: 1px solid var(--line); background: #243452; padding: 12px 4px; border-radius: 12px; }
+.stage-card strong { display: block; font-size: 1.65rem; margin-bottom: 6px; }
+.stage-card span { display: block; color: var(--muted); font-size: .875rem; letter-spacing: -.02em; line-height: 1.5; }
+.stage-card.selected { background: #264247; border-color: var(--world-color); }
+.stage-card.selected strong { color: var(--world-color); }
+.stage-card:disabled { opacity: .5; }
+.mode-tabs { display: flex; gap: 6px; padding: 6px; background: #101b30; border-radius: 16px; margin-top: 26px; }
+.mode-tabs button { flex: 1; background: transparent; color: var(--muted); padding: 12px 8px; }
+.mode-tabs button.active { background: #334b61; color: var(--ink); }
+.stage-preview { margin: 20px 0; background: #152139; padding: 16px; border-radius: 12px; }
+.stage-preview > span { font-size: .875rem; color: var(--muted); }
+.stage-preview p { font-size: 1.125rem; line-height: 1.8; margin-top: 8px; overflow-wrap: anywhere; }
+.stage-preview small { display: block; margin-top: 8px; color: var(--muted); }
+.primary { background: var(--mint); color: #0c2931; min-height: 60px; width: 100%; font-size: 1.125rem; font-weight: 800; }
+.game-panel { max-width: 720px; margin: 0 auto; background: var(--panel); border: 1px solid #34475f; border-radius: 24px; padding: 24px 32px; }
+.game-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.game-toolbar .quiet-button { padding: 10px 14px; }
+.game-place { font-size: .9375rem; color: var(--muted); text-align: center; }
+.time-badge { font-size: .9375rem; font-variant-numeric: tabular-nums; padding: 9px 12px; border: 1px solid var(--line); border-radius: 12px; color: var(--muted); }
+.round-progress { display: flex; gap: 16px; align-items: center; margin: 22px 0 28px; color: var(--muted); font-size: .875rem; }
+.round-progress > span { min-width: 44px; text-align: right; }
+.progress-track { height: 8px; border-radius: 6px; overflow: hidden; background: #0f1c32; flex: 1; }
+.progress-track > span { display: block; width: 0; height: 100%; background: var(--mint); border-radius: 6px; transition: width .25s; }
+.question-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 22px; }
+.question-top .eyebrow { margin: 0; }
+.tiny-label { color: var(--muted); font-size: .875rem; }
+.speaker-button { display: flex; justify-content: center; align-items: center; gap: 14px; margin: 0 auto 20px; min-height: 76px; min-width: 180px; background: #31475f; border: 1px solid #587088; font-size: 1.125rem; }
+.speaker-button svg { width: 30px; height: 30px; color: var(--mint); }
+.fallback { display: flex; flex-direction: column; gap: 8px; text-align: center; color: #ffda70; margin-bottom: 20px; }
+.fallback > span { font-size: .9375rem; }
+.fallback strong { font-size: 2rem; line-height: 1.3; color: var(--ink); }
+.hint-line { min-height: 38px; text-align: center; color: #ffda70; font-size: 1rem; margin-bottom: 8px; }
+.hint-line strong { display: inline-block; font-size: 1.75rem; padding-left: 8px; }
+.spelling-slots { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 30px; }
+.letter-slot { min-width: 30px; width: clamp(30px, 6vw, 50px); height: 58px; display: grid; place-items: center; border-bottom: 3px solid #68809c; background: #17243c; border-radius: 8px 8px 0 0; font-size: 2rem; line-height: 1.3; font-family: ui-rounded, system-ui, sans-serif; }
+.letter-slot.filled { color: var(--mint); border-color: var(--mint); background: #223c44; }
+.letter-tiles { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; max-width: 490px; margin: 0 auto; }
+.letter-tile { padding: 0; min-height: 64px; font-size: 1.875rem; font-weight: 700; border-radius: 12px; background: #e5edf6; color: #14223b; border-bottom: 4px solid #9dacc4; font-family: ui-rounded, system-ui, sans-serif; }
+.letter-tile:disabled { opacity: .3; border-color: transparent; }
+.feedback { min-height: 52px; margin: 24px 0 8px; text-align: center; color: var(--muted); font-size: 1rem; line-height: 1.6; }
+.feedback.positive { color: var(--mint); }
+.game-bottom { display: flex; justify-content: space-between; gap: 10px; padding-top: 20px; margin-top: 16px; border-top: 1px solid var(--line); font-size: .875rem; color: var(--muted); }
+.game-bottom > span:last-child { color: #ffda70; white-space: nowrap; }
+.sentence-text { font-size: clamp(1.75rem, 4vw, 2.125rem); line-height: 1.7; text-align: center; margin: 28px 0; overflow-wrap: anywhere; }
+.sentence-blank { color: var(--mint); letter-spacing: .05em; white-space: nowrap; }
+mark { color: #102f35; background: var(--mint); padding: 2px 8px; border-radius: 6px; }
+.word-options { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.word-card { background: #e5edf6; color: #14223b; border: 2px solid #c6d7e6; min-width: 140px; max-width: 100%; font-size: 1.75rem; padding: 16px; min-height: 76px; overflow-wrap: anywhere; }
+.word-card.correct { background: var(--mint); border-color: var(--mint); }
+.word-card.muted { background: #30405a; border-color: #435573; color: #9fb0c6; }
+.bubble-field { position: relative; height: 270px; overflow: hidden; margin: 16px 0 0; background: radial-gradient(ellipse at bottom, #214851, #142139 70%); border: 1px solid #3f596e; border-radius: 18px; }
+.word-bubble { position: absolute; left: var(--x); bottom: var(--y); width: 41%; padding: 12px 4px; min-height: 76px; border-radius: 50px; background: #294956; color: #eafaff; border: 2px solid #65b8b9; font-size: 1.75rem; overflow-wrap: anywhere; animation: float-up var(--duration) linear var(--delay) infinite; }
+.word-bubble.caught { background: var(--mint); color: var(--bg); border-color: #effff8; }
+.results-panel { max-width: 650px; margin: 0 auto; padding: 34px; text-align: center; border-radius: 24px; background: var(--panel); border: 1px solid #34475f; }
+.result-stars { margin: 24px 0 16px; font-size: 3rem; color: #ffda70; letter-spacing: .1em; }
+.result-emblem { width: 104px; height: 104px; padding: 28px; margin: 0 auto 28px; color: var(--mint); background: #254247; border-radius: 30px; border: 1px solid #417f7b; transform: rotate(-6deg); }
+.result-robot .robot { width: 190px; margin: 0 auto; }
+.result-stats { grid-template-columns: repeat(2, 1fr); max-width: 320px; margin: 0 auto; padding: 20px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.result-stats strong { font-size: 2rem; }
+.result-stats span { color: var(--muted); font-size: .9375rem; }
+.result-note { font-size: 1rem; line-height: 1.7; margin: 24px 0; color: var(--muted); }
+.result-actions { display: grid; gap: 12px; }
+.parent-panel { padding: 28px; border: 1px solid var(--line); border-radius: 24px; background: var(--panel); }
+.parent-panel h1 { font-size: 1.75rem; }
+.parent-summary { margin: 28px 0; padding: 22px; background: #14223a; border-radius: 15px; }
+.parent-summary strong { font-size: 2rem; }
+.parent-summary span { color: var(--muted); font-size: .9375rem; }
+.parent-help { line-height: 1.8; color: var(--muted); margin-bottom: 24px; }
+.parent-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.parent-lists h2 { margin-bottom: 14px; }
+.parent-lists h2 > span { font-weight: 450; font-size: 1rem; color: var(--muted); padding-left: 8px; }
+.word-list { display: flex; flex-wrap: wrap; align-content: start; gap: 8px; background: #152139; border-radius: 14px; padding: 18px; min-height: 140px; }
+.word-list > span { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #3f6971; padding: 8px 12px; border-radius: 8px; background: #22444a; color: #a6f1e4; font-size: 1.125rem; }
+.review-list > span { background: #3c3530; border-color: #72614b; color: #ffe0a1; }
+.word-list small { color: #c5b491; }
+.empty-note { color: var(--muted); font-size: .9375rem; line-height: 1.7; }
+.robot-gallery { margin-top: 32px; }
+.gallery-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 16px; }
+.gallery-grid > div { background: #152139; text-align: center; border-radius: 14px; padding: 12px 8px; }
+.gallery-grid .robot { max-width: 100%; }
+.gallery-grid strong { display: block; font-size: .9375rem; }
+.gallery-grid span { display: block; font-size: .875rem; color: var(--muted); margin-top: 6px; }
+.parent-reset { display: flex; justify-content: space-between; align-items: center; gap: 20px; border-top: 1px solid var(--line); margin-top: 28px; padding-top: 22px; }
+.parent-reset p { color: var(--muted); font-size: .9375rem; line-height: 1.7; }
+.danger-button { color: #ffc7c7; border: 1px solid #805563; background: #442d40; white-space: nowrap; }
+.storage-note { margin-top: 16px; color: #ffda70; font-size: .9375rem; line-height: 1.6; }
+#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; }
+.shake { animation: shake .35s ease; }
+@keyframes shake { 0%, 100% { margin-left: 0; } 25%, 75% { margin-left: -5px; } 50% { margin-left: 5px; } }
+@keyframes float-up { from { transform: translateY(60px); } to { transform: translateY(-190px); } }
+@media (max-width: 800px) {
+  .base-layout, .world-layout { grid-template-columns: 1fr; gap: 24px; }
+  .hangar { display: grid; grid-template-columns: 1fr 145px; align-items: center; padding: 0; column-gap: 8px; }
+  .hangar .eyebrow { grid-column: 1; margin-bottom: 8px; }
+  .hangar h1 { grid-column: 1; font-size: 1.85rem; }
+  .robot-platform { grid-column: 2; grid-row: 1 / span 3; height: 170px; }
+  .robot-platform .robot { width: 145px; }
+  .orbit-one { width: 130px; height: 105px; }
+  .orbit-two { width: 160px; height: 135px; }
+  .hangar-coordinate { display: none; }
+  .collection-stats { grid-column: 1 / span 2; margin-top: 14px; padding: 16px 0; }
+  .collection-stats strong { font-size: 1.6rem; }
+  .hangar .short-note { grid-column: 1 / span 2; margin-top: 8px; }
+  .world-hangar { display: grid; grid-template-columns: 1fr 150px; text-align: left; align-items: center; }
+  .world-hangar .quiet-button { margin-bottom: 18px; justify-self: start; }
+  .world-hangar .robot { grid-column: 2; grid-row: 1 / span 4; width: 150px; margin: 0; }
+  .world-hangar .eyebrow { grid-column: 1; margin-top: 0; }
+  .world-hangar h1 { grid-column: 1; font-size: 1.85rem; }
+  .world-hangar .robot-name { grid-column: 1; font-size: 1rem; margin-top: 8px; }
+  .world-hangar .short-note { grid-column: 1 / span 2; }
+  .app-header { padding-bottom: 22px; }
+  .gallery-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 480px) {
+  .app-shell { padding: 12px 14px 0; }
+  .app-header { padding-bottom: 16px; }
+  .brand { gap: 8px; font-size: 1rem; }
+  .brand-symbol { width: 36px; height: 36px; }
+  .brand small { letter-spacing: .12em; }
+  .app-header .quiet-button { padding: 10px 14px; }
+  .hangar { grid-template-columns: 1fr 126px; }
+  .hangar h1 { font-size: clamp(1.35rem, 6vw, 1.7rem); }
+  .robot-platform { height: 148px; }
+  .robot-platform .robot { width: 126px; }
+  .mission-panel, .stage-panel { padding: 18px 16px; border-radius: 20px; }
+  .panel-heading { margin-bottom: 16px; }
+  .world-list { gap: 10px; }
+  .world-card { min-height: 80px; padding: 13px 12px; gap: 12px; }
+  .world-copy > strong { font-size: 1rem; }
+  .world-status { font-size: .875rem; }
+  .bonus-icon { display: none; }
+  .bonus-status { font-size: .875rem; }
+  .world-hangar { grid-template-columns: 1fr 126px; }
+  .world-hangar .robot { width: 126px; }
+  .stage-grid { grid-template-columns: repeat(3, 1fr); }
+  .game-panel { padding: 16px; border-radius: 20px; }
+  .game-toolbar { gap: 6px; flex-wrap: wrap; }
+  .game-place { flex: 1; font-size: .875rem; }
+  .time-badge { padding: 8px; }
+  .game-toolbar .quiet-button { padding: 10px; font-size: .875rem; }
+  .round-progress { margin: 18px 0 24px; }
+  .question-top { margin-bottom: 16px; }
+  .question-top .eyebrow, .tiny-label { font-size: .875rem; }
+  .speaker-button { min-height: 68px; margin-bottom: 18px; }
+  .spelling-slots { gap: 4px; margin-bottom: 24px; }
+  .letter-slot { width: 31px; min-width: 26px; height: 52px; font-size: 1.75rem; }
+  .letter-tiles { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .letter-tile { min-height: 60px; }
+  .word-options { gap: 10px; }
+  .word-card { min-width: 120px; flex: 1 1 120px; padding: 14px 8px; }
+  .feedback { margin-top: 20px; }
+  .game-bottom { flex-wrap: wrap; font-size: .875rem; }
+  .results-panel { padding: 26px 18px; }
+  .result-stars { font-size: 2.6rem; }
+  .parent-panel { padding: 18px 16px; }
+  .parent-panel .panel-heading { align-items: start; }
+  .parent-panel h1 { font-size: 1.375rem; }
+  .parent-summary { padding: 16px 10px; gap: 8px; }
+  .parent-summary strong { font-size: 1.65rem; }
+  .parent-summary strong small { font-size: .875rem; }
+  .parent-summary span { font-size: .875rem; }
+  .parent-lists { grid-template-columns: 1fr; }
+  .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+  .parent-reset { flex-direction: column; align-items: stretch; gap: 12px; }
+  .app-footer { flex-wrap: wrap; font-size: .875rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .word-bubble { bottom: calc(var(--y) + 50px); }
+}
+
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <button class="brand" id="home-button" aria-label="回到基地"><span class="brand-symbol" aria-hidden="true">W</span><span>词语机甲队<small>WORD PILOTS</small></span></button>
+      <button class="quiet-button" id="parent-button">家长</button>
+    </header>
+    <main id="app" tabindex="-1"></main>
+    <footer class="app-footer"><span>每次一小步，每天更厉害</span><span>220 个词 · 5 个世界</span></footer>
+  </div>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+  <noscript>请开启浏览器的 JavaScript 后再玩。</noscript>
+  <script>
+'use strict';
+let WORDS;
+let LEVEL_KEYS;
+let ALL_WORDS;
+let WORLDS;
+let shuffle;
+let SENTENCES;
+let storageWorks;
+let getProgress;
+let wordProgress;
+let answerWord;
+let stageProgress;
+let stageComplete;
+let worldComplete;
+let noteStageWord;
+let finishStage;
+let stageQueue;
+let resetProgress;
+let speechReady;
+let unlockSpeech;
+let speak;
+let stopSpeech;
+let listenSpell;
+let fillBlank;
+let wordHunt;
+({ WORDS, LEVEL_KEYS, ALL_WORDS, WORLDS, shuffle } = (() => {
+// The supplied Dolch list: preserve both level and word order.
+const WORDS = {
+  pre_primer: ["the","to","and","a","I","you","it","in","said","for","up","look","is","go","we","little","down","can","see","not","one","my","me","big","come","blue","red","where","jump","away","here","help","make","yellow","two","play","run","find","three","funny"],
+  primer: ["he","was","that","she","on","they","but","at","with","all","there","out","be","have","am","do","did","what","so","get","like","this","will","yes","went","are","now","no","came","ride","into","good","want","too","pretty","four","saw","well","ran","brown","eat","who","new","must","black","white","soon","our","ate","say","under","please"],
+  first_grade: ["of","his","had","him","her","some","as","then","could","when","were","them","ask","an","over","just","from","any","how","know","put","take","every","old","by","after","think","let","going","walk","again","may","stop","fly","round","give","once","open","has","live","thank"],
+  second_grade: ["would","very","your","its","around","don't","right","green","their","call","sleep","five","wash","or","before","been","off","cold","tell","work","first","does","goes","write","always","made","gave","us","buy","those","use","fast","pull","both","sit","which","read","why","found","because","best","upon","these","sing","wish","many"],
+  third_grade: ["if","long","about","got","six","never","seven","eight","today","myself","much","keep","try","start","ten","bring","drink","only","better","hold","warm","full","done","light","pick","hurt","cut","kind","fall","carry","small","own","show","hot","far","draw","clean","grow","together","shall","laugh"]
+};
+const LEVEL_KEYS = Object.keys(WORDS);
+const ALL_WORDS = Object.values(WORDS).flat();
+const WORLDS = [
+  { key: 'pre_primer', name: '星光基地', robot: '星光先锋', color: '#58dfcb', code: '01' },
+  { key: 'primer', name: '云端航线', robot: '云翼守卫', color: '#70bfff', code: '02' },
+  { key: 'first_grade', name: '熔岩山谷', robot: '赤焰探险家', color: '#ff9970', code: '03' },
+  { key: 'second_grade', name: '极光冰原', robot: '极光巡航者', color: '#baa3ff', code: '04' },
+  { key: 'third_grade', name: '太阳之城', robot: '太阳领航员', color: '#ffda70', code: '05' }
+];
+function shuffle(items) {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+return { WORDS, LEVEL_KEYS, ALL_WORDS, WORLDS, shuffle };
+})());
+({ SENTENCES } = (() => {
+
+// Brackets identify the single exact target occurrence; original and blanked
+// forms are derived together, so casing and punctuation round-trip exactly.
+const examples = {
+  the: 'Look at [the] moon.', to: 'We go [to] school.', and: 'Tom [and] Sam play.', a: 'I see [a] dog.', I: '[I] like robots.',
+  you: 'Can [you] help me?', it: 'Put [it] in the box.', in: 'The toy is [in] my bag.', said: 'Dad [said] hello.', for: 'This gift is [for] you.',
+  up: 'Look [up] at the sky.', look: 'Please [look] at my picture.', is: 'My dog [is] happy.', go: 'We [go] to the park.', we: 'Can [we] play now?',
+  little: 'I have a [little] boat.', down: 'Sit [down] with me.', can: 'I [can] jump.', see: 'I [see] a rainbow.', not: 'That is [not] my hat.',
+  one: 'I have [one] kite.', my: 'This is [my] robot.', me: 'Come with [me].', big: 'That is a [big] tree.', come: 'Please [come] here.',
+  blue: 'The sky is [blue].', red: 'My cap is [red].', where: 'Do you know [where] my bag is?', jump: 'I can [jump] high.', away: 'The bird flew [away].',
+  here: 'Your book is [here].', help: 'Please [help] me.', make: 'We can [make] a kite.', yellow: 'I see a [yellow] bus.', two: 'I have [two] hands.',
+  play: 'We [play] outside.', run: 'I can [run] fast.', find: 'Can you [find] my shoe?', three: 'I see [three] stars.', funny: 'That is a [funny] joke.',
+  he: 'Can [he] ride a bike?', was: 'The puppy [was] sleepy.', that: 'Look at [that] rocket.', she: 'Can [she] come too?', on: 'The cup is [on] the table.',
+  they: 'Can [they] play with us?', but: 'I am small, [but] I am strong.', at: 'Look [at] the stars.', with: 'Play [with] me.', all: 'We [all] like games.',
+  there: 'My bike is over [there].', out: 'Come [out] and play.', be: 'I will [be] kind.', have: 'I [have] a toy car.', am: 'I [am] happy.',
+  do: 'What can we [do]?', did: 'We [did] a good job.', what: 'Tell me [what] you see.', so: 'The puppy is [so] cute.', get: 'Let us [get] our coats.',
+  like: 'I [like] this book.', this: 'Look at [this] shell.', will: 'I [will] help you.', yes: 'Please say [yes].', went: 'I [went] to the park.',
+  are: 'We [are] a team.', now: 'Let us play [now].', no: 'There are [no] clouds today.', came: 'My friend [came] to play.', ride: 'I can [ride] a bike.',
+  into: 'The frog jumps [into] the pond.', good: 'You are a [good] friend.', want: 'I [want] a snack.', too: 'I can come [too].', pretty: 'That is a [pretty] flower.',
+  four: 'The car has [four] wheels.', saw: 'I [saw] a little bird.', well: 'You did [well] today.', ran: 'The dog [ran] home.', brown: 'The bear is [brown].',
+  eat: 'We [eat] lunch together.', who: 'Do you know [who] made this?', new: 'I have a [new] book.', must: 'We [must] wear our helmets.', black: 'My cat is [black].',
+  white: 'The snow is [white].', soon: 'We will go home [soon].', our: 'This is [our] tree house.', ate: 'I [ate] an apple.', say: 'Please [say] hello.',
+  under: 'The cat is [under] the bed.', please: 'Help me, [please].',
+  of: 'I want a cup [of] milk.', his: 'That is [his] ball.', had: 'We [had] fun today.', him: 'Give the ball to [him].', her: 'This is [her] kite.',
+  some: 'I have [some] grapes.', as: 'I am [as] tall as you.', then: 'We eat, [then] we play.', could: 'I [could] hear the birds.', when: 'Tell me [when] to start.',
+  were: 'The ducks [were] in the pond.', them: 'I can help [them].', ask: 'You can [ask] me.', an: 'I see [an] owl.', over: 'The plane flies [over] the hill.',
+  just: 'I [just] finished my puzzle.', from: 'This card is [from] Dad.', any: 'Do you have [any] crayons?', how: 'Show me [how] to draw.', know: 'I [know] your name.',
+  put: 'Please [put] the toy here.', take: 'Please [take] my hand.', every: 'I read [every] day.', old: 'This is an [old] tree.', by: 'Sit [by] me.',
+  after: 'We play [after] lunch.', think: 'I [think] it will rain.', let: 'Please [let] me try.', going: 'We are [going] home.', walk: 'We [walk] to school.',
+  again: 'Let us try [again].', may: 'You [may] have a turn.', stop: 'Please [stop] at the gate.', fly: 'Birds can [fly].', round: 'The ball is [round].',
+  give: 'Please [give] me a hug.', once: 'I saw a fox [once].', open: 'Please [open] the box.', has: 'My robot [has] blue eyes.', live: 'We [live] near a park.',
+  thank: 'I want to [thank] you.',
+  would: 'I [would] like some water.', very: 'The turtle is [very] slow.', your: 'Is this [your] hat?', its: 'The dog wags [its] tail.', around: 'We walk [around] the pond.',
+  "don't": "I [don't] like cold soup.", right: 'Turn [right] at the tree.', green: 'The frog is [green].', their: 'This is [their] garden.', call: 'Please [call] my name.',
+  sleep: 'I [sleep] in my bed.', five: 'I see [five] ducks.', wash: 'Please [wash] your hands.', or: 'Do you want milk [or] water?', before: 'Wash your hands [before] lunch.',
+  been: 'I have [been] to the zoo.', off: 'Take [off] your boots.', cold: 'The snow feels [cold].', tell: 'Please [tell] me a story.', work: 'We [work] as a team.',
+  first: 'I put my shoes on [first].', does: 'What [does] a frog eat?', goes: 'My brother [goes] to school.', write: 'I can [write] my name.', always: 'I [always] brush my teeth.',
+  made: 'I [made] a paper boat.', gave: 'Dad [gave] me a hug.', us: 'Come and play with [us].', buy: 'We can [buy] some bread.', those: 'Look at [those] clouds.',
+  use: 'You can [use] my crayons.', fast: 'The rabbit runs [fast].', pull: 'Please [pull] the little wagon.', both: 'We [both] like robots.', sit: 'Please [sit] here.',
+  which: 'Tell me [which] book you want.', read: 'I like to [read] books.', why: 'Tell me [why] you are happy.', found: 'I [found] my toy.', because: 'I smile [because] I am happy.',
+  best: 'You are my [best] friend.', upon: 'Once [upon] a time, a bear found a hat.', these: 'I like [these] shoes.', sing: 'We can [sing] a song.', wish: 'I [wish] I could fly.',
+  many: 'There are [many] stars.',
+  if: 'We can play outside [if] it is sunny.', long: 'The train is [long].', about: 'This book is [about] space.', got: 'I [got] a new bike.', six: 'I have [six] crayons.',
+  never: 'I [never] tease my friends.', seven: 'I see [seven] balloons.', eight: 'A spider has [eight] legs.', today: 'We can play [today].', myself: 'I can dress [myself].',
+  much: 'Thank you so [much].', keep: 'Please [keep] your room tidy.', try: 'I will [try] again.', start: 'We can [start] now.', ten: 'I have [ten] fingers.',
+  bring: 'Please [bring] your book.', drink: 'I [drink] water.', only: 'I have [only] one cookie.', better: 'I feel [better] today.', hold: 'Please [hold] my hand.',
+  warm: 'My coat is [warm].', full: 'My cup is [full].', done: 'My puzzle is [done].', light: 'Turn on the [light].', pick: 'Please [pick] a book.',
+  hurt: 'My knee does not [hurt] now.', cut: 'Dad can [cut] the apple.', kind: 'Please be [kind].', fall: 'Leaves [fall] from the trees.', carry: 'I can [carry] my bag.',
+  small: 'The mouse is [small].', own: 'I have my [own] desk.', show: 'Please [show] me your picture.', hot: 'The soup is [hot].', far: 'The moon is [far] away.',
+  draw: 'I can [draw] a robot.', clean: 'Please [clean] your desk.', grow: 'Plants [grow] in the sun.', together: 'We play [together].', shall: 'What [shall] we play?',
+  laugh: 'Funny stories make me [laugh].'
+};
+
+const confusionGroups = [
+  ['were','where','when'], ['then','them','the'], ['saw','was','say'], ['of','off','for'],
+  ['went','want','what'], ['there','their','these'], ['your','our','you'], ['to','too','two'],
+  ['on','one','no'], ['he','her','here'], ['his','is','has'], ['she','see','we'],
+  ['a','an','am'], ['I','if','in'], ['it','its','sit'], ['and','an','any'],
+  ['look','like','little'], ['go','goes','good'], ['do','does',"don't"], ['come','came','can'],
+  ['me','my','may'], ['be','by','buy'], ['blue','black','brown'], ['red','read','ride'],
+  ['up','us','use'], ['out','our','over'], ['all','call','fall'], ['had','has','have'],
+  ['will','well','with'], ['not','now','new'], ['ran','run','round'], ['eat','ate','at'],
+  ['white','write','with'], ['four','for','from'], ['thank','think','that'], ['who','how','why'],
+  ['made','make','many'], ['found','find','funny'], ['soon','some','so'], ['right','ride','light'],
+  ['would','could','cold'], ['very','every','never'], ['five','give','live'], ['sleep','keep','see'],
+  ['before','because','both'], ['been','be','green'], ['tell','well','let'], ['work','walk','word'],
+  ['first','fast','far'], ['always','away','all'], ['gave','give','have'], ['those','these','this'],
+  ['pull','full','put'], ['which','wish','with'], ['best','be','been'], ['upon','up','open'],
+  ['sing','sit','going'], ['if','of','off'], ['long','look','going'], ['about','out','both'],
+  ['got','get','go'], ['six','sit','fix'], ['seven','never','every'], ['eight','right','light'],
+  ['today','to','they'], ['myself','my','me'], ['much','must','such'], ['try','three','they'],
+  ['start','stop','star'], ['ten','then','them'], ['bring','big','sing'], ['drink','think','kind'],
+  ['only','one','old'], ['better','before','best'], ['hold','old','cold'], ['warm','wash','work'],
+  ['done','one','down'], ['pick','pretty','play'], ['hurt','her','hot'], ['cut','but','put'],
+  ['carry','call','came'], ['small','all','shall'], ['own','on','now'], ['show','she','shall'],
+  ['draw','down','did'], ['clean','can','came'], ['grow','go','green'], ['together','there','their'],
+  ['laugh','look','light'], ['yellow','yes','you'], ['jump','just','up'], ['help','he','her'],
+  ['two','to','too'], ['three','there','their'], ['they','the','that'], ['yes','you','your'],
+  ['am','an','ask'], ['get','got','give'], ['pretty','please','play'], ['under','after','her'],
+  ['please','play','pull'], ['as','ask','has'], ['ask','as','at'], ['just','must','us'],
+  ['any','and','an'], ['know','no','now'], ['take','make','thank'], ['old','hold','cold'],
+  ['after','ask','at'], ['let','little','tell'], ['again','going','an'], ['stop','start','sit'],
+  ['fly','five','funny'], ['once','one','on'], ['open','on','over']
+];
+const allowed = new Set(ALL_WORDS);
+function distance(a, b) {
+  a = a.toLowerCase(); b = b.toLowerCase();
+  const row = Array.from({length: b.length + 1}, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    let previous = row[0]; row[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const old = row[j];
+      row[j] = Math.min(row[j] + 1, row[j - 1] + 1, previous + (a[i - 1] === b[j - 1] ? 0 : 1));
+      previous = old;
+    }
+  }
+  return row[b.length];
+}
+function distractorsFor(word) {
+  const curated = confusionGroups.filter(group => group.includes(word)).flat();
+  const nearby = ALL_WORDS.filter(other => other !== word).sort((a, b) => distance(word, a) - distance(word, b));
+  return [...new Set([...curated, ...nearby])].filter(other => other !== word && allowed.has(other)).slice(0, 2);
+}
+const SENTENCES = Object.fromEntries(ALL_WORDS.map(word => {
+  const tagged = examples[word];
+  if (!tagged || !tagged.includes(`[${word}]`)) throw new Error(`Missing sentence: ${word}`);
+  return [word, [{
+    answer: word,
+    original: tagged.replace(`[${word}]`, word),
+    blanked: tagged.replace(`[${word}]`, '___'),
+    distractors: distractorsFor(word)
+  }]];
+}));
+
+return { SENTENCES };
+})());
+({ storageWorks, getProgress, wordProgress, answerWord, stageProgress, stageComplete, worldComplete, noteStageWord, finishStage, stageQueue, resetProgress } = (() => {
+
+const STORAGE_KEY = 'word-pilots-dolch-v1';
+const empty = () => ({ version: 1, words: {}, stages: {}, parts: [], robots: [], rounds: 0 });
+let data = empty();
+let storageAvailable = true;
+const validWord = word => ALL_WORDS.includes(word);
+const integer = (value, maximum) => Math.min(maximum, Math.max(0, Math.floor(Number(value) || 0)));
+
+try {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+  if (saved?.version === 1) {
+    for (const word of ALL_WORDS) {
+      const entry = saved.words?.[word];
+      if (entry && typeof entry === 'object') data.words[word] = {
+        mastery: integer(entry.mastery, 3), correct: integer(entry.correct, 100000),
+        misses: integer(entry.misses, 100000), lastMiss: integer(entry.lastMiss, Number.MAX_SAFE_INTEGER),
+        review: entry.review === true,
+        spell: integer(entry.spell, 100000), sentence: integer(entry.sentence, 100000)
+      };
+    }
+    for (const key of Object.keys(WORDS)) {
+      for (let stage = 0; stage < Math.ceil(WORDS[key].length / 8); stage++) {
+        const id = `${key}:${stage}`;
+        for (const mode of ['spell', 'sentence']) {
+          const entry = saved.stages?.[id]?.[mode];
+          if (entry) {
+            data.stages[id] ||= {};
+            data.stages[id][mode] = {
+              stars: integer(entry.stars, 3),
+              seen: Array.isArray(entry.seen) ? [...new Set(entry.seen.filter(word => WORDS[key].slice(stage * 8, stage * 8 + 8).includes(word)))] : []
+            };
+          }
+        }
+      }
+    }
+    data.parts = Array.isArray(saved.parts) ? [...new Set(saved.parts.filter(validWord))] : [];
+    data.robots = Array.isArray(saved.robots) ? [...new Set(saved.robots.filter(key => key in WORDS))] : [];
+    data.rounds = integer(saved.rounds, 100000);
+  }
+} catch { storageAvailable = false; }
+
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); storageAvailable = true; }
+  catch { storageAvailable = false; }
+}
+function storageWorks() { return storageAvailable; }
+function getProgress() { return data; }
+function wordProgress(word) {
+  return data.words[word] || { mastery: 0, correct: 0, misses: 0, lastMiss: 0, review: false, spell: 0, sentence: 0 };
+}
+function answerWord(word, correct, mode) {
+  const entry = data.words[word] ||= { ...wordProgress(word) };
+  if (correct) {
+    entry.mastery = Math.min(3, entry.mastery + 1);
+    entry.correct++;
+    if (mode === 'spell' || mode === 'sentence') entry[mode]++;
+    if (entry.mastery >= 3) entry.review = false;
+  } else {
+    entry.mastery = Math.max(0, entry.mastery - 1);
+    entry.misses++;
+    entry.lastMiss = Date.now();
+    entry.review = true;
+  }
+  const earnedPart = entry.mastery >= 3 && !data.parts.includes(word);
+  if (earnedPart) data.parts.push(word);
+  save();
+  return earnedPart;
+}
+function stageProgress(key, stage, mode) {
+  return data.stages[`${key}:${stage}`]?.[mode] || { stars: 0, seen: [] };
+}
+function stageComplete(key, stage, mode) {
+  return WORDS[key].slice(stage * 8, stage * 8 + 8).every(word => stageProgress(key, stage, mode).seen.includes(word));
+}
+function worldComplete(key) {
+  return Array.from({ length: Math.ceil(WORDS[key].length / 8) }, (_, stage) => stage).every(stage =>
+    stageComplete(key, stage, 'spell') && stageComplete(key, stage, 'sentence'));
+}
+function noteStageWord(key, stage, mode, word) {
+  if (!WORDS[key].slice(stage * 8, stage * 8 + 8).includes(word)) return;
+  const id = `${key}:${stage}`;
+  data.stages[id] ||= {};
+  data.stages[id][mode] ||= { stars: 0, seen: [] };
+  if (!data.stages[id][mode].seen.includes(word)) data.stages[id][mode].seen.push(word);
+  save();
+}
+function finishStage(key, stage, mode, stars) {
+  const id = `${key}:${stage}`;
+  data.stages[id] ||= {};
+  data.stages[id][mode] ||= { stars: 0, seen: [] };
+  data.stages[id][mode].stars = Math.max(data.stages[id][mode].stars, stars);
+  data.rounds++;
+  const unlocked = worldComplete(key) && !data.robots.includes(key);
+  if (unlocked) data.robots.push(key);
+  save();
+  return unlocked;
+}
+function stageQueue(key, stage, mode) {
+  const base = WORDS[key].slice(stage * 8, stage * 8 + 8);
+  const completed = stageComplete(key, stage, mode);
+  const pending = completed ? base : base.filter(word => !stageProgress(key, stage, mode).seen.includes(word));
+  const missed = ALL_WORDS.filter(word => wordProgress(word).review && !pending.includes(word))
+    .sort((a, b) => wordProgress(b).lastMiss - wordProgress(a).lastMiss).slice(0, 2);
+  const queue = [...missed, ...pending];
+  if (data.rounds % 3 === 2 && queue.length < 10) {
+    const mastered = shuffle(ALL_WORDS.filter(word => wordProgress(word).mastery >= 3 && !queue.includes(word)));
+    if (mastered.length) queue.push(mastered[0]);
+  }
+  // Short final stages still offer eight words, using earlier words as review.
+  const padding = [...WORDS[key].slice(0, stage * 8), ...WORDS[key], ...ALL_WORDS];
+  for (const word of padding) {
+    if (queue.length >= 8) break;
+    if (!queue.includes(word)) queue.push(word);
+  }
+  return queue.slice(0, 10);
+}
+function resetProgress() {
+  data = empty();
+  save();
+}
+
+return { storageWorks, getProgress, wordProgress, answerWord, stageProgress, stageComplete, worldComplete, noteStageWord, finishStage, stageQueue, resetProgress };
+})());
+({ speechReady, unlockSpeech, speak, stopSpeech } = (() => {
+let englishVoice = null;
+const synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
+function chooseVoice() {
+  if (!synth || typeof SpeechSynthesisUtterance === 'undefined') return;
+  const english = synth.getVoices().filter(voice => /^en(?:[-_]|$)/i.test(voice.lang));
+  const named = voice => /Samantha|Google US English|Microsoft Aria/i.test(voice.name);
+  englishVoice = english.find(voice => named(voice) && voice.localService)
+    || english.find(named) || english.find(voice => voice.localService)
+    || english.find(voice => /^en[-_]US$/i.test(voice.lang)) || english[0] || null;
+}
+if (synth) {
+  chooseVoice();
+  synth.addEventListener('voiceschanged', chooseVoice);
+}
+function speechReady() { chooseVoice(); return Boolean(synth && englishVoice); }
+function unlockSpeech() {
+  if (!synth || typeof SpeechSynthesisUtterance === 'undefined') return;
+  // Must run synchronously inside the start tap for iOS.
+  try {
+    synth.cancel();
+    const utterance = new SpeechSynthesisUtterance('');
+    utterance.lang = 'en-US'; utterance.rate = 0.8;
+    synth.speak(utterance);
+  } catch { englishVoice = null; }
+}
+function speak(text) {
+  if (!speechReady()) return false;
+  try {
+    synth.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US'; utterance.rate = 0.8; utterance.voice = englishVoice;
+    utterance.onerror = event => {
+      if (!['canceled', 'interrupted'].includes(event.error)) {
+        englishVoice = null;
+        window.dispatchEvent(new Event('speechfallback'));
+      }
+    };
+    synth.speak(utterance);
+    return true;
+  } catch { englishVoice = null; return false; }
+}
+function stopSpeech() { if (synth) synth.cancel(); }
+
+return { speechReady, unlockSpeech, speak, stopSpeech };
+})());
+({ listenSpell } = (() => {
+
+
+function listenSpell(host, word, callbacks) {
+  let position = 0;
+  let misses = 0;
+  let finished = false;
+  const characters = [...word];
+  const distractors = shuffle([...'abcdefghijklmnopqrstuvwxyz'].filter(letter => !word.toLowerCase().includes(letter))).slice(0, 3);
+  const tiles = shuffle([...characters, ...distractors]);
+  host.innerHTML = `
+    <div class="question-top"><span class="eyebrow">听音拼词</span><span class="tiny-label">点字母，拼单词</span></div>
+    <button class="speaker-button" aria-label="听单词">${callbacks.speakerIcon}<span>听单词</span></button>
+    <div class="fallback" ${speechReady() ? 'hidden' : ''}><span>请家长读</span><strong lang="en">${word}</strong></div>
+    <div class="hint-line" aria-live="polite"></div>
+    <div class="spelling-slots" aria-label="拼词区域" lang="en">${characters.map(() => '<span class="letter-slot">&nbsp;</span>').join('')}</div>
+    <div class="letter-tiles">${tiles.map((letter, index) => `<button class="letter-tile" data-index="${index}" lang="en" aria-label="字母 ${letter === "'" ? '撇号' : letter}">${letter === "'" ? '&#39;' : letter}</button>`).join('')}</div>
+    <p class="feedback" aria-live="polite">准备好了？听一听！</p>
+    <button class="primary next-button" hidden>下一个</button>`;
+  const fallback = host.querySelector('.fallback');
+  const feedback = host.querySelector('.feedback');
+  const hint = host.querySelector('.hint-line');
+  const slots = [...host.querySelectorAll('.letter-slot')];
+  function read() { fallback.hidden = speak(word); }
+  host.querySelector('.speaker-button').onclick = read;
+  const showFallback = () => { fallback.hidden = false; };
+  window.addEventListener('speechfallback', showFallback);
+  host.querySelector('.next-button').onclick = callbacks.next;
+  host.querySelectorAll('.letter-tile').forEach(button => {
+    button.onclick = () => {
+      if (finished || button.disabled) return;
+      const letter = tiles[Number(button.dataset.index)];
+      if (letter === characters[position]) {
+        button.disabled = true;
+        slots[position].textContent = letter;
+        slots[position].classList.add('filled');
+        position++;
+        if (position === characters.length) {
+          finished = true;
+          callbacks.correct(misses);
+          feedback.textContent = misses >= 3 ? '抄写完成！你学会了一点点。' : '拼对了！继续前进。';
+          feedback.classList.add('positive');
+          host.querySelector('.next-button').hidden = false;
+          read();
+        }
+      } else {
+        misses++;
+        callbacks.wrong();
+        button.classList.remove('shake'); void button.offsetWidth; button.classList.add('shake');
+        feedback.textContent = '再听一次，慢慢来。';
+        if (misses === 2) hint.textContent = `提示：第一个字母是 ${characters[0]}`;
+        if (misses >= 3) {
+          hint.innerHTML = `<span>照着拼一次</span> <strong lang="en">${word}</strong>`;
+          if (misses === 3) {
+            position = 0;
+            slots.forEach(slot => { slot.innerHTML = '&nbsp;'; slot.classList.remove('filled'); });
+            host.querySelectorAll('.letter-tile').forEach(tile => { tile.disabled = false; });
+          }
+        }
+        read();
+      }
+    };
+  });
+  read();
+  return () => window.removeEventListener('speechfallback', showFallback);
+}
+
+return { listenSpell };
+})());
+({ fillBlank } = (() => {
+
+
+
+function fillBlank(host, word, callbacks) {
+  const sentence = SENTENCES[word][0];
+  const options = shuffle([word, ...sentence.distractors]);
+  let misses = 0;
+  let finished = false;
+  host.innerHTML = `
+    <div class="question-top"><span class="eyebrow">句子选词</span><span class="tiny-label">选一个词，补完整</span></div>
+    <button class="speaker-button" aria-label="听句子">${callbacks.speakerIcon}<span>听句子</span></button>
+    <div class="fallback" ${speechReady() ? 'hidden' : ''}><span>请家长读</span><strong lang="en">${word}</strong></div>
+    <p class="sentence-text" lang="en">${sentence.blanked.replace('___', '<span class="sentence-blank">___</span>')}</p>
+    <div class="word-options">${options.map(option => `<button class="word-card" lang="en" data-word="${option}">${option}</button>`).join('')}</div>
+    <p class="feedback" aria-live="polite">哪个单词最合适？</p>
+    <button class="primary next-button" hidden>下一个</button>`;
+  const fallback = host.querySelector('.fallback');
+  const feedback = host.querySelector('.feedback');
+  const read = () => { fallback.hidden = speak(sentence.original); };
+  host.querySelector('.speaker-button').onclick = read;
+  const showFallback = () => { fallback.hidden = false; };
+  window.addEventListener('speechfallback', showFallback);
+  host.querySelector('.next-button').onclick = callbacks.next;
+  host.querySelectorAll('.word-card').forEach(button => {
+    button.onclick = () => {
+      if (finished || button.disabled) return;
+      if (button.dataset.word === word) {
+        finished = true;
+        button.classList.add('correct');
+        host.querySelectorAll('.word-card').forEach(card => { card.disabled = true; });
+        host.querySelector('.sentence-text').innerHTML = sentence.blanked.replace('___', `<mark>${word}</mark>`);
+        feedback.textContent = '选对了！听听完整的句子。';
+        feedback.classList.add('positive');
+        callbacks.correct(misses);
+        host.querySelector('.next-button').hidden = false;
+        read();
+      } else {
+        misses++;
+        callbacks.wrong();
+        button.disabled = true;
+        button.classList.add('shake', 'muted');
+        feedback.textContent = '再听一次，你可以的。';
+        if (misses >= 2) feedback.textContent = `提示：试试 ${word}。`;
+        read();
+      }
+    };
+  });
+  read();
+  return () => window.removeEventListener('speechfallback', showFallback);
+}
+
+return { fillBlank };
+})());
+({ wordHunt } = (() => {
+
+
+function wordHunt(host, word, callbacks) {
+  let finished = false;
+  const options = shuffle([word, ...shuffle(callbacks.pool.filter(item => item !== word)).slice(0, 3)]);
+  host.innerHTML = `
+    <div class="question-top"><span class="eyebrow">词语捕手</span><span class="tiny-label">听一听，点气泡</span></div>
+    <button class="speaker-button" aria-label="听单词">${callbacks.speakerIcon}<span>听单词</span></button>
+    <div class="fallback" ${speechReady() ? 'hidden' : ''}><span>请家长读</span><strong lang="en">${word}</strong></div>
+    <div class="bubble-field">${options.map((option, i) => `<button class="word-bubble" lang="en" data-word="${option}" style="--delay:${-i * 1.3}s;--duration:${7 + i}s;--x:${[4, 53, 8, 56][i]}%;--y:${i % 2 ? 12 : 45}px">${option}</button>`).join('')}</div>
+    <p class="feedback" aria-live="polite">找到它！</p>
+    <button class="primary next-button" hidden>下一个</button>`;
+  const fallback = host.querySelector('.fallback');
+  function read() { fallback.hidden = speak(word); }
+  host.querySelector('.speaker-button').onclick = read;
+  const showFallback = () => { fallback.hidden = false; };
+  window.addEventListener('speechfallback', showFallback);
+  host.querySelector('.next-button').onclick = callbacks.next;
+  host.querySelectorAll('.word-bubble').forEach(button => {
+    button.onclick = () => {
+      if (finished) return;
+      if (button.dataset.word === word) {
+        finished = true;
+        button.classList.add('caught');
+        host.querySelectorAll('.word-bubble').forEach(bubble => { bubble.disabled = true; });
+        const points = callbacks.correct(0);
+        host.querySelector('.feedback').textContent = `找到了！ +${points} 能量`;
+        host.querySelector('.feedback').classList.add('positive');
+        host.querySelector('.next-button').hidden = false;
+      } else {
+        button.classList.remove('shake'); void button.offsetWidth; button.classList.add('shake');
+        host.querySelector('.feedback').textContent = '再听听，能量不会减少。';
+        read();
+      }
+    };
+  });
+  read();
+  return () => window.removeEventListener('speechfallback', showFallback);
+}
+
+return { wordHunt };
+})());
+{
+
+
+
+
+
+
+const app = document.getElementById('app');
+const speakerIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M11 4 5 9H2v6h3l6 5z"/><path d="M15 8a6 6 0 0 1 0 8M18 4a11 11 0 0 1 0 16"/></svg>';
+const boltIcon = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m13 2-9 12h7l-1 8 10-13h-7z"/></svg>';
+const state = { screen: 'menu', world: 0, stage: 0, mode: 'spell', queue: [], index: 0, done: 0, clean: 0, misses: 0, points: 0, combo: 0, lastCatch: 0, newParts: 0, unlocked: false, timer: null, cleanup: null, deadline: 0, answered: false };
+let confettiFrame = 0;
+const masteredCount = key => (key ? WORDS[key] : ALL_WORDS).filter(word => wordProgress(word).mastery >= 3).length;
+const stars = count => '★'.repeat(count) + '☆'.repeat(3 - count);
+const worldOpen = index => index === 0 || worldComplete(WORLDS[index - 1].key);
+function huntQueue(pool) {
+  const order = shuffle(pool);
+  return Array.from({ length: 8 }, (_, i) => order[i % order.length]);
+}
+function robot(index, unlocked = false) {
+  const world = WORLDS[index];
+  const count = getProgress().parts.filter(word => WORDS[world.key].includes(word)).length;
+  const visible = threshold => unlocked || count >= threshold ? '1' : '.20';
+  const crests = [
+    '<path d="m119 64 11-30 11 30"/>',
+    '<path d="m108 65-20-27 31 13m33 14 20-27-31 13"/>',
+    '<path d="m117 65-4-25 17 13 17-13-4 25"/>',
+    '<path d="m106 66 9-28 15 13 15-13 9 28"/>',
+    '<path d="m103 66-5-22 21 9 11-26 11 26 21-9-5 22"/>'
+  ];
+  // Original geometric robot designs, drawn specifically for this game.
+  return `<svg class="robot" viewBox="0 0 260 310" role="img" aria-label="${world.robot}${unlocked ? '，已解锁' : '，收集零件来组装'}" style="--robot-color:${world.color}">
+    <ellipse cx="130" cy="286" rx="83" ry="9" fill="${world.color}" opacity=".12"/>
+    <g fill="${world.color}" stroke="#14233d" stroke-width="4" stroke-linejoin="round">
+      <g opacity="${visible(6)}"><path d="m76 109-29 14-11 68 23 8 14-54 19-7M184 109l29 14 11 68-23 8-14-54-19-7"/><path d="m39 189-9 29 24 10 11-33M221 189l9 29-24 10-11-33" fill="#d9edf3"/></g>
+      <g opacity="${visible(12)}"><path d="m91 211-12 60 39 1 11-61m42 0 12 60-39 1-11-61" fill="#d9edf3"/><path d="m78 259-12 23 56 1-5-26m66 2 12 23-56 1 5-26"/><path d="M92 227h22m32 0h22" fill="none" stroke="${world.color}" stroke-width="8"/></g>
+      <g opacity="${visible(3)}"><path d="m80 111 21-14h58l21 14-10 93-20 15h-40l-20-15z" fill="#d9edf3"/><path d="m80 111 24 25h52l24-25-10 58H90z"/><path d="m117 147 13-10 13 10-4 21h-18z" fill="#15253d"/><path d="m131 144-8 12h8l-1 7 9-13h-8" fill="#ffda70" stroke="none"/><path d="M99 184h62v17H99z" fill="#536786"/><path d="M110 186v12m20-12v12m20-12v12" fill="none" stroke="#b8d7e6" stroke-width="3"/></g>
+      <g opacity="${visible(1)}"><path d="M97 65h66l13 18-8 35-20 9h-36l-20-9-8-35z" fill="#e5f2f7"/><path d="m105 82 25 6 25-6-4 19h-42z" fill="#14233d"/><path d="m110 89 14 3m12 0 14-3" stroke="${world.color}" stroke-width="5" fill="none"/><path d="m120 109 10-5 10 5-10 9z"/>${crests[index]}<path d="M90 82h-9v24h12m77-24h9v24h-12"/></g>
+    </g>
+    <g fill="none" stroke="${world.color}" stroke-width="1" opacity=".35"><path d="M22 82V47h35m146 0h35v35M22 235v35h30m156 0h30v-35"/></g>
+  </svg>`;
+}
+function stopRound() {
+  clearInterval(state.timer); state.timer = null;
+  if (state.cleanup) state.cleanup(); state.cleanup = null;
+  stopSpeech();
+}
+function focusMain() { app.focus({ preventScroll: true }); window.scrollTo(0, 0); }
+function storageNotice() { return storageWorks() ? '' : '<p class="storage-note" role="status">浏览器暂时不能保存，当前游戏仍可继续。</p>'; }
+function renderMenu() {
+  stopRound(); state.screen = 'menu';
+  const progress = getProgress();
+  const next = WORLDS.findIndex(world => !worldComplete(world.key));
+  const selected = next < 0 ? 4 : next;
+  app.innerHTML = `
+    <div class="base-layout">
+      <section class="hangar">
+        <span class="eyebrow">小队长，准备出发！</span>
+        <h1>学会单词，<br>组装你的机甲。</h1>
+        <div class="robot-platform">${robot(selected, progress.robots.includes(WORLDS[selected].key))}<span class="orbit orbit-one"></span><span class="orbit orbit-two"></span><span class="hangar-coordinate">${WORLDS[selected].code} / ${WORLDS[selected].robot}</span></div>
+        <div class="collection-stats"><div><strong>${masteredCount()}<small>/ 220</small></strong><span>已掌握</span></div><div><strong>${progress.parts.length}</strong><span>机甲零件</span></div><div><strong>${progress.robots.length}<small>/ 5</small></strong><span>完整机甲</span></div></div>
+        <p class="short-note">掌握一个词，就能得到一个零件。</p>
+      </section>
+      <section class="mission-panel">
+        <div class="panel-heading"><h2>选择世界</h2><span class="round-label">每轮约 3 分钟</span></div>
+        <div class="world-list">${WORLDS.map((world, index) => {
+          const unlocked = progress.robots.includes(world.key);
+          const open = worldOpen(index);
+          const completed = Array.from({length: Math.ceil(WORDS[world.key].length / 8)}, (_, stage) => stage).filter(stage => stageComplete(world.key, stage, 'spell') && stageComplete(world.key, stage, 'sentence')).length;
+          return `<button class="world-card ${open ? '' : 'locked'} ${selected === index ? 'recommended' : ''}" data-world="${index}" style="--world-color:${world.color}" ${open ? '' : 'disabled'}><span class="world-number">${world.code}</span><span class="world-copy"><strong>${world.name}${unlocked ? '<span class="world-badge">已完成</span>' : ''}</strong><span>${open ? `${WORDS[world.key].length} 个词 · ${completed}/${Math.ceil(WORDS[world.key].length / 8)} 站` : '完成上个世界后开启'}</span></span><span class="world-status">${unlocked ? '★' : open ? '出发' : '待开启'}</span></button>`;
+        }).join('')}</div>
+        <button class="bonus-button" id="bonus-button" ${ALL_WORDS.some(word => wordProgress(word).correct > 0) ? '' : 'disabled'}><span class="bonus-icon">${boltIcon}</span><span><strong>词语捕手</strong><small>用学过的词，收集更多能量</small></span><span class="bonus-status">加分游戏</span></button>
+        ${storageNotice()}
+      </section>
+    </div>`;
+  app.querySelectorAll('[data-world]').forEach(button => { button.onclick = () => renderWorld(Number(button.dataset.world)); });
+  app.querySelector('#bonus-button').onclick = () => {
+    unlockSpeech();
+    const pool = ALL_WORDS.filter(word => wordProgress(word).correct > 0);
+    startRound('hunt', huntQueue(pool));
+  };
+  focusMain();
+}
+function renderWorld(index = state.world, stage = null, mode = null) {
+  stopRound(); state.screen = 'menu'; state.world = index;
+  const world = WORLDS[index];
+  const stageCount = Math.ceil(WORDS[world.key].length / 8);
+  const next = Array.from({length: stageCount}, (_, i) => i).find(i => !stageComplete(world.key, i, 'spell') || !stageComplete(world.key, i, 'sentence'));
+  state.stage = stage ?? next ?? 0;
+  state.mode = mode || (stageComplete(world.key, state.stage, 'spell') && !stageComplete(world.key, state.stage, 'sentence') ? 'sentence' : 'spell');
+  const targetWords = WORDS[world.key].slice(state.stage * 8, state.stage * 8 + 8);
+  app.innerHTML = `
+    <div class="world-layout" style="--world-color:${world.color}">
+      <section class="world-hangar"><button class="quiet-button" id="back-base">回到基地</button><span class="eyebrow">世界 ${world.code}</span><h1>${world.name}</h1>${robot(index, getProgress().robots.includes(world.key))}<p class="robot-name">${world.robot}</p><p class="short-note">每站练习拼词和句子，就能解锁机甲。</p></section>
+      <section class="stage-panel"><div class="panel-heading"><h2>选择小站</h2><span class="round-label">每站 8 个词</span></div>
+        <div class="stage-grid">${Array.from({length: stageCount}, (_, i) => {
+          const open = i === 0 || (stageComplete(world.key, i - 1, 'spell') && stageComplete(world.key, i - 1, 'sentence'));
+          return `<button class="stage-card ${i === state.stage ? 'selected' : ''}" data-stage="${i}" ${open ? '' : 'disabled'} aria-pressed="${i === state.stage}"><strong>${i + 1}</strong><span>拼 ${stars(stageProgress(world.key, i, 'spell').stars)}</span><span>句 ${stars(stageProgress(world.key, i, 'sentence').stars)}</span></button>`;
+        }).join('')}</div>
+        <div class="mode-tabs" role="group" aria-label="练习方式"><button data-mode="spell" class="${state.mode === 'spell' ? 'active' : ''}" aria-pressed="${state.mode === 'spell'}">听音拼词</button><button data-mode="sentence" class="${state.mode === 'sentence' ? 'active' : ''}" aria-pressed="${state.mode === 'sentence'}">句子选词</button></div>
+        <div class="stage-preview"><span>第 ${state.stage + 1} 站的词</span><p lang="en">${targetWords.join(' · ')}</p>${targetWords.length < 8 ? '<small>再加几个学过的词，轻松复习。</small>' : ''}</div>
+        <button class="primary" id="start-button">开始第 ${state.stage + 1} 站</button><p class="short-note">点字母或词卡，不用打字。</p>${storageNotice()}
+      </section>
+    </div>`;
+  app.querySelector('#back-base').onclick = renderMenu;
+  app.querySelectorAll('[data-stage]').forEach(button => { button.onclick = () => renderWorld(index, Number(button.dataset.stage), state.mode); });
+  app.querySelectorAll('[data-mode]').forEach(button => { button.onclick = () => renderWorld(index, state.stage, button.dataset.mode); });
+  app.querySelector('#start-button').onclick = () => { unlockSpeech(); startRound(state.mode); };
+  focusMain();
+}
+function startRound(mode, customQueue = null) {
+  stopRound();
+  Object.assign(state, { screen: 'level', mode, queue: customQueue || stageQueue(WORLDS[state.world].key, state.stage, mode), index: 0, done: 0, clean: 0, misses: 0, points: 0, combo: 0, lastCatch: 0, newParts: 0, unlocked: false, answered: false });
+  state.deadline = Date.now() + (mode === 'hunt' ? 90000 : 180000);
+  app.innerHTML = `
+    <section class="game-panel">
+      <div class="game-toolbar"><button class="quiet-button" id="pause-button">休息一下</button><span class="game-place">${mode === 'hunt' ? '词语捕手' : `${WORLDS[state.world].name} · 第 ${state.stage + 1} 站`}</span><span class="time-badge" id="round-time">${mode === 'hunt' ? '1:30' : '3:00'}</span></div>
+      <div class="round-progress"><div class="progress-track"><span id="progress-fill"></span></div><span id="question-count"></span></div>
+      <div id="question"></div>
+      <div class="game-bottom"><span>${mode === 'hunt' ? '只有加分，轻松找词' : '慢慢来，答错也可以再试'}</span><span id="energy-count">${mode === 'hunt' ? '0 能量' : '零件 +0'}</span></div>
+      ${storageNotice()}
+    </section>`;
+  app.querySelector('#pause-button').onclick = () => renderResults('pause');
+  state.timer = setInterval(() => {
+    if (state.screen !== 'level') return;
+    const remaining = Math.max(0, Math.ceil((state.deadline - Date.now()) / 1000));
+    app.querySelector('#round-time').textContent = `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, '0')}`;
+    if (remaining === 0) renderResults('time');
+  }, 250);
+  // A backgrounded mobile tab cannot extend the practice round.
+  renderQuestion(); focusMain();
+}
+function renderQuestion() {
+  if (state.screen !== 'level') return;
+  if (Date.now() >= state.deadline) { renderResults('time'); return; }
+  if (state.index >= state.queue.length) { renderResults('complete'); return; }
+  if (state.cleanup) state.cleanup();
+  state.answered = false;
+  const word = state.queue[state.index];
+  app.querySelector('#question-count').textContent = `${state.index + 1} / ${state.queue.length}`;
+  app.querySelector('#progress-fill').style.width = `${100 * state.done / state.queue.length}%`;
+  const callbacks = {
+    speakerIcon,
+    pool: ALL_WORDS.filter(item => wordProgress(item).correct > 0),
+    wrong: () => {
+      if (state.screen !== 'level' || state.answered) return;
+      state.misses++;
+      answerWord(word, false, state.mode);
+    },
+    correct: misses => {
+      if (state.screen !== 'level' || state.answered) return 0;
+      state.answered = true;
+      state.done++;
+      if (misses === 0) state.clean++;
+      let points = 0;
+      if (state.mode === 'hunt') {
+        const now = Date.now();
+        state.combo = now - state.lastCatch <= 5000 ? state.combo + 1 : 1;
+        state.lastCatch = now;
+        points = Math.min(5, state.combo);
+        state.points += points;
+      } else {
+        if (answerWord(word, true, state.mode)) state.newParts++;
+        noteStageWord(WORLDS[state.world].key, state.stage, state.mode, word);
+      }
+      app.querySelector('#energy-count').textContent = state.mode === 'hunt' ? `${state.points} 能量` : `零件 +${state.newParts}`;
+      app.querySelector('#progress-fill').style.width = `${100 * state.done / state.queue.length}%`;
+      return points;
+    },
+    next: () => { state.index++; renderQuestion(); }
+  };
+  const mount = state.mode === 'spell' ? listenSpell : state.mode === 'sentence' ? fillBlank : wordHunt;
+  state.cleanup = mount(app.querySelector('#question'), word, callbacks);
+}
+function renderResults(reason) {
+  if (state.screen !== 'level') return;
+  stopRound(); state.screen = 'results';
+  const awardedStars = state.done === 0 ? 1 : state.clean / state.done >= .9 ? 3 : state.clean / state.done >= .6 ? 2 : 1;
+  if (state.mode !== 'hunt') state.unlocked = finishStage(WORLDS[state.world].key, state.stage, state.mode, awardedStars);
+  const world = WORLDS[state.world];
+  const title = state.unlocked ? `${world.robot}，出动！` : reason === 'complete' ? '今天又进步了！' : '小队长，休息一下！';
+  const completed = state.mode !== 'hunt' && stageComplete(world.key, state.stage, state.mode);
+  app.innerHTML = `
+    <section class="results-panel"><span class="eyebrow">${state.mode === 'hunt' ? '能量补给完成' : '任务收获'}</span><h1>${title}</h1>
+      <div class="result-stars" aria-label="${awardedStars} 颗星">${stars(awardedStars)}</div>
+      ${state.unlocked ? `<div class="result-robot">${robot(state.world, true)}</div>` : `<div class="result-emblem">${boltIcon}</div>`}
+      <div class="result-stats"><div><strong>${state.done}</strong><span>练习单词</span></div><div><strong>${state.mode === 'hunt' ? state.points : state.newParts}</strong><span>${state.mode === 'hunt' ? '收集能量' : '新零件'}</span></div></div>
+      <p class="result-note">${state.unlocked ? '两种练习都完成了，新世界已开启！' : state.mode === 'hunt' ? '每次找到单词，都是一个小胜利。' : completed ? '这一站完成了！换种方式再练练。' : '进度已记住，下次接着练。'}</p>
+      <div class="result-actions"><button class="primary" id="continue-button">${state.mode === 'hunt' ? '再玩一轮' : !completed ? '接着练' : state.mode === 'spell' ? '练习句子' : stageComplete(world.key, state.stage, 'spell') ? state.stage + 1 < Math.ceil(WORDS[world.key].length / 8) ? '前往下一站' : '回到基地' : '练习拼词'}</button><button class="quiet-button" id="results-home">回到基地</button></div>${storageNotice()}
+    </section>`;
+  app.querySelector('#results-home').onclick = renderMenu;
+  app.querySelector('#continue-button').onclick = () => {
+    if (state.mode === 'hunt') {
+      unlockSpeech();
+      const learned = ALL_WORDS.filter(word => wordProgress(word).correct > 0);
+      startRound('hunt', huntQueue(learned));
+    } else if (!completed) renderWorld(state.world, state.stage, state.mode);
+    else if (state.mode === 'spell') renderWorld(state.world, state.stage, 'sentence');
+    else if (!stageComplete(world.key, state.stage, 'spell')) renderWorld(state.world, state.stage, 'spell');
+    else if (state.stage + 1 < Math.ceil(WORDS[world.key].length / 8)) renderWorld(state.world, state.stage + 1, 'spell');
+    else renderMenu();
+  };
+  if (state.done > 0) confetti();
+  focusMain();
+}
+function renderParents() {
+  if (state.screen === 'level') renderResults('pause');
+  stopRound(); state.screen = 'menu';
+  const mastered = ALL_WORDS.filter(word => wordProgress(word).mastery >= 3);
+  const review = ALL_WORDS.filter(word => wordProgress(word).review || (wordProgress(word).correct > 0 && wordProgress(word).mastery < 3));
+  app.innerHTML = `
+    <section class="parent-panel"><div class="panel-heading"><div><span class="eyebrow">家长查看</span><h1>每一步都有收获</h1></div><button class="quiet-button" id="parent-back">回到基地</button></div>
+      <div class="parent-summary"><div><strong>${mastered.length}<small> / 220</small></strong><span>已掌握</span></div><div><strong>${review.length}</strong><span>待复习</span></div><div><strong>${getProgress().parts.length}</strong><span>已收集零件</span></div></div>
+      <p class="parent-help">熟练度 0–3：答对加 1，答错减 1。到 3 就掌握。拼词和句子都练过，理解更牢。</p>
+      <div class="parent-lists"><section><h2>已掌握 <span>${mastered.length}</span></h2><div class="word-list">${mastered.length ? mastered.map(word => `<span lang="en">${word}</span>`).join('') : '<p class="empty-note">还在起步，每次练习都有进步。</p>'}</div></section><section><h2>待复习 <span>${review.length}</span></h2><div class="word-list review-list">${review.length ? review.map(word => `<span lang="en" title="拼词 ${wordProgress(word).spell} 次，句子 ${wordProgress(word).sentence} 次">${word}<small>${wordProgress(word).mastery}/3</small></span>`).join('') : '<p class="empty-note">暂时没有需要复习的词。</p>'}</div></section></div>
+      <section class="robot-gallery"><h2>机甲收藏</h2><div class="gallery-grid">${WORLDS.map((world, index) => `<div>${robot(index, getProgress().robots.includes(world.key))}<strong>${world.robot}</strong><span>${getProgress().robots.includes(world.key) ? '已解锁' : `${getProgress().parts.filter(word => WORDS[world.key].includes(word)).length} 个零件`}</span></div>`).join('')}</div></section>
+      <div class="parent-reset"><p>进度只保存在这台设备的浏览器里。</p><button class="danger-button" id="reset-button">重置进度</button></div>${storageNotice()}
+    </section>`;
+  app.querySelector('#parent-back').onclick = renderMenu;
+  app.querySelector('#reset-button').onclick = () => {
+    if (window.confirm('确定清空所有单词、星星和机甲吗？这个操作不能撤销。')) { resetProgress(); renderParents(); }
+  };
+  focusMain();
+}
+function confetti() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  cancelAnimationFrame(confettiFrame);
+  const canvas = document.getElementById('confetti');
+  const context = canvas.getContext('2d');
+  if (!context) return;
+  const ratio = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = window.innerWidth * ratio; canvas.height = window.innerHeight * ratio;
+  context.setTransform(ratio, 0, 0, ratio, 0, 0);
+  const bits = Array.from({length: 54}, () => ({ x: Math.random() * window.innerWidth, y: -30 - Math.random() * 200, speed: 2 + Math.random() * 3, angle: Math.random() * 6, color: shuffle(['#58dfcb', '#ff9970', '#ffda70', '#70bfff'])[0] }));
+  const end = performance.now() + 1800;
+  function draw() {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    if (performance.now() > end) return;
+    bits.forEach(bit => {
+      bit.y += bit.speed; bit.angle += .04;
+      context.save(); context.translate(bit.x, bit.y); context.rotate(bit.angle); context.fillStyle = bit.color;
+      context.fillRect(-3, -5, 6, 10); context.restore();
+    });
+    confettiFrame = requestAnimationFrame(draw);
+  }
+  draw();
+}
+document.getElementById('home-button').onclick = () => {
+  if (state.screen === 'level') renderResults('pause');
+  else renderMenu();
+};
+document.getElementById('parent-button').onclick = renderParents;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) stopSpeech();
+  else if (state.screen === 'level' && Date.now() >= state.deadline) renderResults('time');
+});
+renderMenu();
+
+}
+  </script>
+</body>
+</html>
