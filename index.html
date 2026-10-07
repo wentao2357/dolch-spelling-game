@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#101a31">
+  <meta name="description" content="离线英语拼词与句子小游戏，学习220个Dolch常见词。">
+  <title>词语机甲队</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <button class="brand" id="home-button" aria-label="回到基地"><span class="brand-symbol" aria-hidden="true">W</span><span>词语机甲队<small>WORD PILOTS</small></span></button>
+      <button class="quiet-button" id="parent-button">家长</button>
+    </header>
+    <main id="app" tabindex="-1"></main>
+    <footer class="app-footer"><span>每次一小步，每天更厉害</span><span>220 个词 · 5 个世界</span></footer>
+  </div>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+  <noscript>请开启浏览器的 JavaScript 后再玩。</noscript>
+  <script>
+    // ES modules are commonly blocked on file://. The bundled copy is fully
+    // self-contained and uses a classic script, so double-clicking either entry works.
+    if (location.protocol === 'file:') {
+      location.replace(new URL('dist/index.html', location.href).href);
+    } else {
+      const entry = document.createElement('script');
+      entry.type = 'module'; entry.src = 'js/main.js'; document.body.append(entry);
+    }
+  </script>
+</body>
+</html>
