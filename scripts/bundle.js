@@ -19,8 +19,8 @@ const code = modules.map((source, i) => {
   const returned = exports[i].join(', ');
   return `({ ${returned} } = (() => {\n${source}\nreturn { ${returned} };\n})());`;
 }).join('\n');
-let html = readFileSync(resolve(root, 'index.html'), 'utf8');
-html = html.replace('  <link rel="stylesheet" href="style.css">', `  <style>\n${css}\n  </style>`);
+let html = readFileSync(resolve(root, 'classic/index.html'), 'utf8');
+html = html.replace('  <link rel="stylesheet" href="../style.css">', `  <style>\n${css}\n  </style>`);
 html = html.replace(/  <script>[\s\S]*?<\/script>/, `  <script>\n'use strict';\n${declarations}\n${code}\n  </script>`);
 writeFileSync(resolve(root, 'dist/index.html'), html);
 console.log('Wrote self-contained dist/index.html (no runtime dependencies).');
