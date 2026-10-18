@@ -1,66 +1,54 @@
-# 词语机甲队 / Word Pilots
+# Little Sky · Word Flight
 
-适合 7–8 岁孩子的离线英语游戏。包含指定顺序的 220 个 Dolch 常见词，练习拼写和句子用法。界面使用简体中文；所有作答都用按钮，不打开系统键盘。
+A gentle, voice-guided 3D Dolch word game for ages 6–8. Original pastel Three.js clouds, floating islands, balloons, and a little airplane. Static HTML/CSS/JavaScript; no accounts, paid services, build secrets, or application server.
 
-## 直接打开
+## Play
 
-- **电脑：**双击 `dist/index.html`，用 Chrome、Edge、Safari 或 Firefox 打开。这个文件包含全部样式、词表和代码，单独复制它也能玩，无需安装、构建或联网。
-- 双击根目录的 `index.html` 也会自动转到 `dist/index.html`。如果只带走一个文件，请带走 `dist/index.html`。
-- **手机：**把 `dist/index.html` 传到手机，在支持本地 HTML 和 JavaScript 的浏览器中打开。普通文件预览器、部分应用内浏览器和 iOS 文件预览可能不执行游戏代码；这种情况可使用下面的局域网方法。
-- **局域网方法（可选）：**在已有 Python 的电脑上，从项目目录运行 `python3 -m http.server 8000 --bind 0.0.0.0`。手机与电脑连接同一 Wi-Fi，在手机浏览器输入电脑局域网 IP、端口 8000 和 `/dist/index.html`。游戏不调用互联网服务；电脑需要保持运行。这不是直接打开游戏的必需步骤。
+- **Listen & Fly (default):** hear an English word, then steer through its matching word gate. Three different choices; wrong picks wobble with encouragement. Missed gates return, with no penalty.
+- **Spell Flight:** hear a word and fly through its letters in order, including the apostrophe in `don't`. Repeated letters are offered again at the correct step.
+- Arrow keys or WASD move up/down/left/right. On phones/tablets use the big directional pad or drag the sky to steer. “Hear again” repeats the target.
+- Each completed word earns one star and a spoken word/letter recap. Ten words complete a round with a celebration. Earn 20 stars in a level to unlock the next. Repeating words earns practice stars.
+- Pause freezes gates and movement. Parents shows progress in each level, learned words, pick accuracy (including letter picks), and confirmed reset.
+- Progress/settings live only in this browser’s localStorage under `little-sky-v1`; Classic progress is separate. If storage is blocked, play continues for the session.
+- Generated WebAudio music starts after a user action, with master gain 0.06; speech is volume 1, en-US, rate 0.85. Music ducks to zero during speech. Independent music/voice switches are saved. Available English voices depend on the device; when speech fails, a grown-up reading prompt shows the target.
 
-首次开始时会尝试激活浏览器语音。离线朗读需要设备已安装英语语音；游戏不会下载语音。如果没有英语声音或朗读失败，显示单词和“请家长读”，游戏照常进行。
+## Word source
 
-## 怎么玩
+`js/words.js` embeds **all canonical Dolch 220 sight words**, grouped as Pre-Primer **40**, Primer **52**, First Grade **41**, Second Grade **46**, Third Grade **41**. The requested [WeChat article](https://mp.weixin.qq.com/s/eYIxof9DD49TFYNAHqte3g) could not be fetched, so this uses the canonical list already present in the repository. The existing self-check verifies counts, uniqueness, spelling/order fingerprint, and sentences.
 
-1. 进入“星光基地”，选择第 1 站和练习方式，点“开始”。基础词按给定顺序排列，每站 8 个新词；末站不足 8 个时补充复习词。遇到待复习词时，一轮最多 10 个词。
-2. **听音拼词：**点喇叭听单词，再依次点字母。错了可以再试；错两次显示首字母，错三次显示完整单词并从头抄拼一次。`don't` 有单独的撇号按钮；重复字母有各自的按钮。
-3. **句子选词：**听完整句子，在三个词卡中选空缺的单词。正确后突出显示答案并再次朗读完整句子。干扰词均来自 Dolch 词表。
-4. 每站的拼词和句子练习都完成后开启下一站；一个世界的全部小站两种练习都完成后，解锁原创机甲和下个世界。
-5. **词语捕手：**学过一个词后就可玩。每轮 8 次找词；词不够时重复复习。听词并点气泡，连续快速找到会增加能量。点错不扣能量，也不降低熟练度。
+## Run locally
 
-普通练习最多 3 分钟，捕手最多 90 秒。时间到了显示休息和收获，不扣分，也不会清空已练习的词。可随时点“休息一下”，下次继续尚未完成的词。
+From this repository:
 
-每个词熟练度为 0–3，练习答对 +1、答错 −1，最低 0、最高 3；3 即掌握。错过的词优先复习，已掌握的词偶尔回来复习。每个词第一次掌握时获得一个永久机甲零件；以后需要复习也不收回零件。星星为 1–3 颗，按本轮无错误完成的比例计算，保留每站每种方式的最好成绩。
-
-“家长”页面可查看已掌握、待复习和机甲收藏。重置必须确认，取消不会清空。
-
-## 保存与隐私
-
-- 进度只存在当前设备、当前浏览器的 `localStorage`，不上传，不采集姓名、账号或其他个人信息。
-- 不同浏览器、不同网址、根目录模块版与 `dist/` 版本可能各有独立进度。`file://` 的储存行为由浏览器决定；移动或重命名文件可能改变储存位置。
-- 隐私浏览、清除浏览器数据、储存被禁用都可能影响保存；无法保存时有提示，仍可玩当前游戏。
-- 无广告、无登录、无 CDN、无第三方运行依赖、无外部链接、无付费服务。机甲均为本项目原创 SVG 图形。
-- 按要求禁用触摸缩放；支持系统字体设置和减少动态效果。按钮高度至少 56px，题目主要英文至少 28px。
-
-## 文件
-
-```text
-index.html                 模块版入口；file:// 自动打开自包含版本
-style.css                  移动优先样式
-js/main.js                 menu → level → results 状态机及页面
-js/words.js                完整、有序的 220 词表
-js/sentences.js            220 个句子、答案、空格与合法干扰词
-js/speech.js               浏览器语音、iOS 激活与无声音回退
-js/progress.js             熟练度、复习调度和本地保存
-js/modes/listen-spell.js    听音拼词
-js/modes/fill-blank.js      句子选词
-js/modes/word-hunt.js       可选找词奖励游戏
-scripts/selfcheck.js       无依赖词表和句子自检
-scripts/bundle.js          可选维护工具，更新已提供的自包含文件
-package.json               仅声明原生 ES modules；无依赖
-dist/index.html            主交付文件，可独立离线打开
-README.md                  说明
-VERIFY.md                  实际验证结果及边界
+```sh
+python3 -m http.server 8000
 ```
 
-## 开发与检查
+Open `http://localhost:8000`. No install or build is required. The 3D game needs WebGL and internet access to the pinned Three.js 0.170.0 ES module on jsDelivr. Serve over HTTP/HTTPS; `file://` is not supported for the 3D module entry. CDN/WebGL failure offers a Classic link.
 
-不需要 `npm install`。HTTP 下根入口直接使用原生 ES modules；通过本地服务器打开根入口即可修改源文件后刷新。
+The original listen/spell, sentence, and word-hunt modes remain at **`/classic/`**. The original fully bundled offline game remains at **`/dist/index.html`**. Rebuild that optional Classic bundle with `node scripts/bundle.js`.
+
+## Deploy as a static site
+
+**Vercel:** import the repository, choose Framework Preset **Other**, leave the build command empty, and use the repository root (`.`) as the output directory. Deploy the PR branch for a preview. No environment variables are needed.
+
+**GitHub Pages:** Settings → Pages → Deploy from a branch → choose the desired published branch and **`/ (root)`**, then Save. The root `index.html` is the 3D home page; relative assets also work under `/dolch-spelling-game/`. Only select `main` after the PR has been reviewed/merged. No deployment was performed by this change.
+
+## Checks
 
 ```sh
 node scripts/selfcheck.js
 find js scripts -name '*.js' -exec node --check '{}' \;
 ```
 
-游戏没有必需的构建步骤。维护者修改源文件后，可运行 `node scripts/bundle.js` 同步 `dist/index.html`，再重新自检；这个脚本只使用 Node 内置模块。
+Optional browser smoke suite (Playwright is a development tool only):
+
+```sh
+npm install --no-save playwright
+npx playwright install chromium
+node scripts/flight-smoke.cjs
+```
+
+You can select an existing installation with `PLAYWRIGHT_MODULE=/path/to/playwright` and `CHROMIUM_PATH=/path/to/chromium`. The suite starts its own temporary HTTP server and requires access to jsDelivr. It verifies scene startup, actual gate collision, wrong-pick retry, scoring, ordered spelling, pause, round completion, storage, unlocking, mobile layout/control, reset, Classic loading, and console errors. Test state hooks are injected only by the test server and never appear in the shipped app.
+
+See `VERIFY.md` for results and device checks that still need human ears/hands.

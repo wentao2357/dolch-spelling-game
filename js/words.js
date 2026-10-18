@@ -1,4 +1,5 @@
-// The supplied Dolch list: preserve both level and word order.
+// Canonical Dolch 220 sight words, grouped 40/52/41/46/41.
+// Requested WeChat source could not be fetched; canonical fallback retained.
 export const WORDS = {
   pre_primer: ["the","to","and","a","I","you","it","in","said","for","up","look","is","go","we","little","down","can","see","not","one","my","me","big","come","blue","red","where","jump","away","here","help","make","yellow","two","play","run","find","three","funny"],
   primer: ["he","was","that","she","on","they","but","at","with","all","there","out","be","have","am","do","did","what","so","get","like","this","will","yes","went","are","now","no","came","ride","into","good","want","too","pretty","four","saw","well","ran","brown","eat","who","new","must","black","white","soon","our","ate","say","under","please"],
