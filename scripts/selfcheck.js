@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
-import { WORDS, ALL_WORDS, LEVEL_KEYS } from '../js/words.js';
+import { WORDS, ALL_WORDS, LEVEL_KEYS, PHRASES } from '../js/words.js';
 import { SENTENCES } from '../js/sentences.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -39,3 +39,16 @@ assert(!/<script[^>]+src=|<link[^>]+stylesheet/i.test(html), 'Bundle must not lo
 assert(!/^import /m.test(html), 'Bundle must have no module imports');
 assert(!/<(?:img|iframe)[^>]+src=["']https?:/i.test(html), 'No external assets');
 console.log(`PASS: ${ALL_WORDS.length} unique words; counts ${counts.join('/')}; ${sentences} valid sentences; 440 valid distractors; bundle is self-contained.`);
+
+let phraseCount=0;
+for(const [i,key] of LEVEL_KEYS.entries()){
+  const unlocked=new Set(LEVEL_KEYS.slice(0,i+1).flatMap(k=>WORDS[k]));
+  assert(PHRASES[key].length>=10,`${key}: full phrase round`);
+  for(const phrase of PHRASES[key]){
+    const words=phrase.split(' ');
+    assert(words.length>=2&&words.length<=4,`${phrase}: phrase length`);
+    for(const word of words)assert(unlocked.has(word),`${key}: locked or non-Dolch word ${word}`);
+    phraseCount++;
+  }
+}
+console.log(`PASS: ${phraseCount} phrases, 2–4 words each, cumulative unlocked Dolch vocabulary only.`);
