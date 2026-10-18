@@ -24,3 +24,16 @@ export function shuffle(items) {
   }
   return copy;
 }
+
+// Phrase Flight: cumulative vocabulary through the selected unlocked level.
+// “the best” is an excerpt from the title “The Best Thing in the World”,
+// the traditional Dolch practice story. “thing” and “world” are NOT Dolch 220
+// words, so those requested longer excerpts are deliberately excluded.
+// All other phrases are original practice combinations, not story quotations.
+export const PHRASES = {
+  pre_primer: ['I can', 'we can go', 'see the little', 'look up', 'come and play', 'you and me', 'the big blue', 'I can see you', 'run and jump', 'help me'],
+  primer: ['we will go', 'she can ride', 'come with me', 'you are good', 'under the little', 'I like to play', 'he went away', 'we have it', 'please help me', 'they ran out'],
+  first_grade: ['let them fly', 'give me some', 'we can fly again', 'take the little', 'walk with me', 'think of her', 'ask him', 'thank you', 'open it again', 'look over there'],
+  second_grade: ['the best', 'read with us', 'sing with me', 'I wish you would', 'sleep very well', 'we found the best', 'wash it well', 'tell us why', 'sit right here', 'we can work'],
+  third_grade: ['try it again', 'we play together', 'keep it clean', 'bring your own', 'hold it', 'show me how', 'start with me', 'I am warm', 'we shall go', 'pick the best']
+};

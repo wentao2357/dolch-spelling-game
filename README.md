@@ -6,7 +6,9 @@ A gentle, voice-guided 3D Dolch word game for ages 6–8. Original pastel Three.
 
 - **Listen & Fly (default):** hear an English word, then steer through its matching word gate. Three different choices; wrong picks wobble with encouragement. Missed gates return, with no penalty.
 - **Spell Flight:** hear a word and fly through its letters in order, including the apostrophe in `don't`. Repeated letters are offered again at the correct step.
-- Arrow keys or WASD move up/down/left/right. On phones/tablets use the big directional pad or drag the sky to steer. “Hear again” repeats the target.
+- **Phrase Flight:** hear a 2–4 word phrase, then catch its words in order. The word trail fills and the combo counts consecutive catches. A wrong word gently restarts the phrase and combo, preserving earned stars. Only a complete unbroken phrase earns stars: its word count plus one bonus per five consecutive catches. Ten phrases complete a round; Parents counts completed phrases by level.
+- Arrow keys or WASD move up/down/left/right. On phones/tablets use the big directional pad or drag the sky to steer. “Hear again” repeats the full target, including the whole phrase. Hold **Space** or the on-screen **🚀** button for an optional smooth 2× forward boost; release to ease back. The final gate approach slows smoothly to normal speed, keeping catches manageable. Space does not scroll the page during flight.
+- The living sky completes an **80-second** continuous day → warm sunset → starry night → soft dawn cycle. A separate **113-second** clear/partly cloudy/soft cloudy cycle changes cloud coverage, drift and tint. Sun and moon arc, stars fade and twinkle, and clouds, fog, islands and lighting follow daylight. The icon at the top shows the sky; cream gate backings and a night glow preserve word contrast. Pause freezes sky time. No storms or weather sounds.
 - Each completed word earns one star and a spoken word/letter recap. Ten words complete a round with a celebration. Earn 20 stars in a level to unlock the next. Repeating words earns practice stars.
 - Pause freezes gates and movement. Parents shows progress in each level, learned words, pick accuracy (including letter picks), and confirmed reset.
 - Progress/settings live only in this browser’s localStorage under `little-sky-v1`; Classic progress is separate. If storage is blocked, play continues for the session.
@@ -14,7 +16,7 @@ A gentle, voice-guided 3D Dolch word game for ages 6–8. Original pastel Three.
 
 ## Word source
 
-`js/words.js` embeds **all canonical Dolch 220 sight words**, grouped as Pre-Primer **40**, Primer **52**, First Grade **41**, Second Grade **46**, Third Grade **41**. The requested [WeChat article](https://mp.weixin.qq.com/s/eYIxof9DD49TFYNAHqte3g) could not be fetched, so this uses the canonical list already present in the repository. The existing self-check verifies counts, uniqueness, spelling/order fingerprint, and sentences.
+`js/words.js` embeds **all canonical Dolch 220 sight words**, grouped as Pre-Primer **40**, Primer **52**, First Grade **41**, Second Grade **46**, Third Grade **41**. The requested [WeChat article](https://mp.weixin.qq.com/s/eYIxof9DD49TFYNAHqte3g) could not be fetched, so this uses the canonical list already present in the repository. The existing self-check verifies counts, uniqueness, spelling/order fingerprint, and sentences. It also checks all **50 per-level phrases** in `js/words.js`: each contains 2–4 words from the cumulative Dolch vocabulary through that level. “the best” comes from the title of the traditional Dolch practice story *The Best Thing in the World* (available from [DolchWord.net](https://www.dolchword.net/)). Other phrases are original practice combinations. **“thing” and “world” are not Dolch 220 words**, so “the best thing” and “in the world” are excluded to preserve the Dolch-only requirement; “the best” becomes available at Second Grade.
 
 ## Run locally
 
@@ -49,6 +51,6 @@ npx playwright install chromium
 node scripts/flight-smoke.cjs
 ```
 
-You can select an existing installation with `PLAYWRIGHT_MODULE=/path/to/playwright` and `CHROMIUM_PATH=/path/to/chromium`. The suite starts its own temporary HTTP server and requires access to jsDelivr. It verifies scene startup, actual gate collision, wrong-pick retry, scoring, ordered spelling, pause, round completion, storage, unlocking, mobile layout/control, reset, Classic loading, and console errors. Test state hooks are injected only by the test server and never appear in the shipped app.
+You can select an existing installation with `PLAYWRIGHT_MODULE=/path/to/playwright` and `CHROMIUM_PATH=/path/to/chromium`. The suite starts its own temporary HTTP server and requires access to jsDelivr. It verifies scene startup, actual gate collision, wrong-pick retry, scoring, ordered spelling, pause, round completion, storage, unlocking, mobile layout/control, reset, Classic loading, and console errors. It additionally checks day/night/weather and icon state, phrase completion-only scoring, wrong-catch resets, streak bonuses, phrase replay and speech settings, phrase persistence/reset, held Space and touch boost, smooth release, and collision while boosted. For environments without CDN connectivity, `THREE_MODULE_PATH=/path/to/official-three-r170-module.js` supplies an exact-version local test fixture to the browser (not shipped). Test state hooks are injected only by the test server and never appear in the shipped app.
 
 See `VERIFY.md` for results and device checks that still need human ears/hands.
